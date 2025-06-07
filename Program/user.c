@@ -1,16 +1,35 @@
+/*
+Nama: Hana Zahirah Syifa
+NIM: 241524045
+*/
+
 #include "user.h"
 
+// Hash password SHA-256
 void hashPassword(const char* password, char* hashed) {
-    unsigned char hash[SHA256_DIGEST_LENGTH];
-    SHA256((const unsigned char*)password, strlen(password), hash);
-    for (int i = 0; i < SHA256_DIGEST_LENGTH; i++) {
+    uint8_t hash[SHA256_BLOCK_SIZE];
+    SHA256_CTX ctx;
+
+    sha256_init(&ctx);
+    sha256_update(&ctx, (const uint8_t*)password, strlen(password));
+    sha256_final(&ctx, hash);
+
+    // Konversi hash ke string heksadesimal menggunakan while
+    int i = 0;
+    while (i < SHA256_BLOCK_SIZE) {
         sprintf(hashed + (i * 2), "%02x", hash[i]);
+        i++;
     }
     hashed[64] = '\0';
 }
 
+// Insert user ke linked list di akhir
 void insertUser(Node** head, User u) {
-    Node* newNode = (Node*)malloc(sizeof(Node));
+    Node* newNode = (Node*) malloc(sizeof(Node));
+    if (!newNode) {
+        perror("Gagal alokasi memori user");
+        exit(1);
+    }
     newNode->info = u;
     newNode->next = NULL;
     if (*head == NULL) {
@@ -22,91 +41,213 @@ void insertUser(Node** head, User u) {
     }
 }
 
+// Cari user berdasarkan email
+static Node* cariUserByEmail(Node* head, const char* email) {
+    while (head != NULL) {
+        if (strcmp(head->info.email, email) == 0) return head;
+        head = head->next;
+    }
+    return NULL;
+}
+
+// Login user, return 1 jika berhasil, 0 jika gagal
 int loginUser(Node* head, const char* email, const char* rawPassword) {
     char hashed[65];
     hashPassword(rawPassword, hashed);
-    while (head != NULL) {
-        if (strcmp(head->info.email, email) == 0 &&
-            strcmp(head->info.password, hashed) == 0) {
-            printf("Login berhasil. Selamat datang, %s!\n", head->info.nama);
-            return 1;
-        }
-        head = head->next;
+    Node* userNode = cariUserByEmail(head, email);
+    if (userNode != NULL && strcmp(userNode->info.password, hashed) == 0) {
+        printf("Login berhasil. Selamat datang, %s!\n", userNode->info.nama);
+        return 1;
     }
     printf("Email atau password salah.\n");
     return 0;
 }
 
-void saveUsersToText(Node* head, const char* filename) {
-    FILE* f = fopen(filename, "w");
+// Ganti karakter dalam string (misal '@' jadi '_')
+void gantiKarakter(char* str, char dari, char ke) {
+    int i = 0;
+    while (str[i]) {
+        if (str[i] == dari) str[i] = ke;
+        i++;
+    }
+}
+
+// Buat folder user berdasarkan email (misal "user_email")
+void buatFolderUser(const char* email) {
+    char folder[256];
+    snprintf(folder, sizeof(folder), "users\\%s", email);
+    _mkdir("users");          // pastikan folder induk ada, jika sudah ada _mkdir aman
+    _mkdir(folder);
+}
+
+// Simpan data user ke folder berdasarkan email
+void saveUserToFolder(User u) {
+    buatFolderUser(u.email);
+    char path[300];
+    snprintf(path, sizeof(path), "users\\%s\\profile.txt", u.email);
+    FILE* f = fopen(path, "w");
     if (!f) {
-        perror("Gagal membuka file");
+        perror("Gagal membuka file user profile");
         return;
     }
-    while (head != NULL) {
-        User u = head->info;
-        fprintf(f, "Nama: %s\n", u.nama);
-        fprintf(f, "Email: %s\n", u.email);
-        fprintf(f, "ID Type: %d\n", u.idType);
-        fprintf(f, "No ID: %s\n", u.noID);
-        fprintf(f, "No HP: %s\n", u.noHP);
-        fprintf(f, "Gender: %d\n", u.gender);
-        fprintf(f, "Password: %s\n", u.password);
-        fprintf(f, "---\n"); // Pemisah user
-        head = head->next;
-    }
+    fprintf(f, "Nama: %s\n", u.nama);
+    fprintf(f, "Email: %s\n", u.email);
+    fprintf(f, "IDType: %d\n", u.idType);
+    fprintf(f, "NoID: %s\n", u.noID);
+    fprintf(f, "NoHP: %s\n", u.noHP);
+    fprintf(f, "Gender: %d\n", u.gender);
+    fprintf(f, "Password: %s\n", u.password);
     fclose(f);
 }
 
+// Load data user dari folder berdasarkan email, return 1 jika berhasil
+int loadUserFromFolder(const char* email, User* u) {
+    char path[300];
+    snprintf(path, sizeof(path), "users\\%s\\profile.txt", email);
+    FILE* f = fopen(path, "r");
+    if (!f) return 0;
 
-void loadUsersFromText(Node** head, const char* filename) {
-    FILE* f = fopen(filename, "r");
-    if (!f) return;
-
-    User u;
     char line[256];
-
     while (fgets(line, sizeof(line), f)) {
         if (strncmp(line, "Nama:", 5) == 0) {
-            sscanf(line + 6, "%[^\n]", u.nama);
+            sscanf(line + 6, " %[^\n]", u->nama);
         } else if (strncmp(line, "Email:", 6) == 0) {
-            sscanf(line + 7, "%[^\n]", u.email);
-        } else if (strncmp(line, "ID Type:", 8) == 0) {
-            sscanf(line + 9, "%d", (int*)&u.idType);
-        } else if (strncmp(line, "No ID:", 6) == 0) {
-            sscanf(line + 7, "%[^\n]", u.noID);
-        } else if (strncmp(line, "No HP:", 6) == 0) {
-            sscanf(line + 7, "%[^\n]", u.noHP);
+            sscanf(line + 7, "%s", u->email);
+        } else if (strncmp(line, "IDType:", 7) == 0) {
+            int t; sscanf(line + 8, "%d", &t); u->idType = (IDType)t;
+        } else if (strncmp(line, "NoID:", 5) == 0) {
+            sscanf(line + 6, "%s", u->noID);
+        } else if (strncmp(line, "NoHP:", 5) == 0) {
+            sscanf(line + 6, "%s", u->noHP);
         } else if (strncmp(line, "Gender:", 7) == 0) {
-            sscanf(line + 8, "%d", (int*)&u.gender);
+            int g; sscanf(line + 8, "%d", &g); u->gender = (GenderType)g;
         } else if (strncmp(line, "Password:", 9) == 0) {
-            sscanf(line + 10, "%[^\n]", u.password);
-        } else if (strncmp(line, "---", 3) == 0) {
-            insertUser(head, u);
+            sscanf(line + 10, "%s", u->password);
         }
     }
     fclose(f);
+    return 1;
 }
 
-void printUser(User u) {
-    printf("Nama: %s\n", u.nama);
-    printf("Email: %s\n", u.email);
-    printf("ID Type: %s\n", u.idType == KTP ? "KTP" : "PASPOR");
-    printf("No ID: %s\n", u.noID);
-    printf("No HP: %s\n", u.noHP);
-    printf("Jenis Kelamin: %s\n", u.gender == LAKI_LAKI ? "Laki-laki" : "Perempuan");
-    printf("Password (hashed): %s\n", u.password);
-    printf("---\n");
+// Tambah penumpang ke file penumpang.txt di folder user
+void tambahPenumpang(const char* email, Penumpang p) {
+    char folder[256];
+    snprintf(folder, sizeof(folder), "users\\%s", email);
+    buatFolderUser(email);
+    char path[300];
+    snprintf(path, sizeof(path), "%s\\penumpang.txt", folder);
+
+    FILE* f = fopen(path, "a");
+    if (!f) {
+        perror("Gagal membuka file penumpang untuk ditambah");
+        return;
+    }
+    fprintf(f, "Nama: %s\n", p.nama);
+    fprintf(f, "IDType: %d\n", p.idType);
+    fprintf(f, "NoID: %s\n", p.noID);
+    fprintf(f, "Gender: %d\n", p.gender);
+    fprintf(f, "---\n");
+    fclose(f);
 }
 
+// Simpan linked list penumpang ke file (dipakai jika ingin overwrite)
+void simpanPenumpangKeFile(const char* path, PenumpangNode* head) {
+    FILE* f = fopen(path, "w");
+    if (!f) {
+        perror("Gagal membuka file penumpang untuk simpan ulang");
+        return;
+    }
+    PenumpangNode* cur = head;
+    while (cur) {
+        fprintf(f, "Nama: %s\n", cur->info.nama);
+        fprintf(f, "IDType: %d\n", cur->info.idType);
+        fprintf(f, "NoID: %s\n", cur->info.noID);
+        fprintf(f, "Gender: %d\n", cur->info.gender);
+        fprintf(f, "---\n");
+        cur = cur->next;
+    }
+    fclose(f);
+}
 
-void freeList(Node** head) {
-    Node* current = *head;
-    while (current) {
-        Node* temp = current;
-        current = current->next;
-        free(temp);
+// Load linked list penumpang dari file penumpang.txt berdasarkan email
+PenumpangNode* loadPenumpangDariFile(const char* email) {
+    char folder[256];
+    snprintf(folder, sizeof(folder), "users\\%s", email);
+    char path[300];
+    snprintf(path, sizeof(path), "%s\\penumpang.txt", folder);
+
+    FILE* f = fopen(path, "r");
+    if (!f) return NULL;
+
+    PenumpangNode* head = NULL;
+    PenumpangNode* tail = NULL;
+
+    Penumpang p;
+    char line[256];
+    int fieldCounter = 0;
+
+    while (fgets(line, sizeof(line), f)) {
+        if (strncmp(line, "Nama:", 5) == 0) {
+            sscanf(line + 6, " %[^\n]", p.nama);
+            fieldCounter = 1;
+        } else if (strncmp(line, "IDType:", 7) == 0) {
+            int t; sscanf(line + 8, "%d", &t); p.idType = (IDType)t;
+            fieldCounter = 2;
+        } else if (strncmp(line, "NoID:", 5) == 0) {
+            sscanf(line + 6, "%s", p.noID);
+            fieldCounter = 3;
+        } else if (strncmp(line, "Gender:", 7) == 0) {
+            int g; sscanf(line + 8, "%d", &g); p.gender = (GenderType)g;
+            fieldCounter = 4;
+        } else if (strncmp(line, "---", 3) == 0) {
+            if (fieldCounter == 4) {
+                PenumpangNode* node = (PenumpangNode*)malloc(sizeof(PenumpangNode));
+                if (!node) {
+                    perror("Gagal alokasi memori penumpang");
+                    fclose(f);
+                    return head;
+                }
+                node->info = p;
+                node->next = NULL;
+                if (!head) {
+                    head = tail = node;
+                } else {
+                    tail->next = node;
+                    tail = node;
+                }
+                fieldCounter = 0;
+            }
+        }
+    }
+    fclose(f);
+    return head;
+}
+
+// Bebaskan linked list penumpang
+void freePenumpangList(PenumpangNode** head) {
+    PenumpangNode* cur = *head;
+    while (cur) {
+        PenumpangNode* next = cur->next;
+        free(cur);
+        cur = next;
     }
     *head = NULL;
+}
+
+// Tampilkan penumpang dari linked list file penumpang.txt user
+void tampilkanPenumpang(const char* email) {
+    PenumpangNode* head = loadPenumpangDariFile(email);
+    if (!head) {
+        printf("Belum ada penumpang tambahan.\n");
+        return;
+    }
+    PenumpangNode* cur = head;
+    int idx = 1;
+    while (cur) {
+        printf("%d. Nama: %s, IDType: %d, NoID: %s, Gender: %d\n",
+            idx++, cur->info.nama, cur->info.idType, cur->info.noID, cur->info.gender);
+        cur = cur->next;
+    }
+    freePenumpangList(&head);
 }
 

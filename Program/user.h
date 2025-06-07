@@ -1,10 +1,16 @@
-#ifndef USER_ADT_H
-#define USER_ADT_H
+/*
+Nama: Hana Zahirah Syifa
+NIM: 241524045
+*/
 
+#ifndef USER_H
+#define USER_H
+#include "sha256.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <openssl/sha.h>
+
+#include <direct.h>
 
 #define MAX 100
 
@@ -18,21 +24,43 @@ typedef struct {
     char noID[MAX];
     char noHP[MAX];
     GenderType gender;
-    char password[65]; 
+    char password[65];
 } User;
+
+typedef struct {
+    char nama[MAX];
+    IDType idType;
+    char noID[MAX];
+    GenderType gender;
+} Penumpang;
+
+typedef struct PenumpangNode {
+    Penumpang info;
+    struct PenumpangNode* next;
+} PenumpangNode;
 
 typedef struct Node {
     User info;
     struct Node* next;
 } Node;
 
+// User
 void hashPassword(const char* password, char* hashed);
 void insertUser(Node** head, User u);
 int loginUser(Node* head, const char* email, const char* rawPassword);
-void saveUsersToText(Node* head, const char* filename);
-void loadUsersFromText(Node** head, const char* filename);
-void printUser(User u);
-void freeList(Node** head);
+void saveUserToFolder(User u);
+int loadUserFromFolder(const char* email, User* u);
+
+// Folder utility
+void buatFolderUser(const char* email);
+void gantiKarakter(char* str, char dari, char ke);
+
+// Penumpang
+void tambahPenumpang(const char* email, Penumpang p);
+void tampilkanPenumpang(const char* email);
+void simpanPenumpangKeFile(const char* path, PenumpangNode* head);
+PenumpangNode* loadPenumpangDariFile(const char* email);
+void freePenumpangList(PenumpangNode** head);
 
 #endif
 
