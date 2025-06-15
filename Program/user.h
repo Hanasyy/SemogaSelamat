@@ -46,8 +46,8 @@ typedef struct UserNode {
 
 
 void hashPassword(const char* password, char* hashed);
-void insertUser(Node** head, User u);
-int loginUser(Node* head, const char* email, const char* rawPassword);
+void insertUser(UserNode** head, User u);
+int loginUser(UserNode* head, const char* email, const char* rawPassword);
 void saveUserToFolder(User u);
 int loadUserFromFolder(const char* email, User* u);
 void buatFolderUser(const char* email);

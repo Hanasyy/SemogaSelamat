@@ -4,8 +4,8 @@
 CPP      = g++.exe -D__DEBUG__
 CC       = gcc.exe -D__DEBUG__
 WINDRES  = windres.exe
-OBJ      = main.o user.o pemesanan.o sha256.o tiket.o menu.o RIWAYAT_PEMESANAN.o
-LINKOBJ  = main.o user.o pemesanan.o sha256.o tiket.o menu.o RIWAYAT_PEMESANAN.o
+OBJ      = main.o user.o pemesanan.o sha256.o tiket.o menu.o RIWAYAT_PEMESANAN.o terminal_util.o kursi_kereta_UI.o manajemen_antrian.o
+LINKOBJ  = main.o user.o pemesanan.o sha256.o tiket.o menu.o RIWAYAT_PEMESANAN.o terminal_util.o kursi_kereta_UI.o manajemen_antrian.o
 LIBS     = -L"C:/Program Files (x86)/Embarcadero/Dev-Cpp/TDM-GCC-64/lib" -L"C:/Program Files (x86)/Embarcadero/Dev-Cpp/TDM-GCC-64/x86_64-w64-mingw32/lib" -static-libgcc -g3
 INCS     = -I"C:/Program Files (x86)/Embarcadero/Dev-Cpp/TDM-GCC-64/include" -I"C:/Program Files (x86)/Embarcadero/Dev-Cpp/TDM-GCC-64/x86_64-w64-mingw32/include" -I"C:/Program Files (x86)/Embarcadero/Dev-Cpp/TDM-GCC-64/lib/gcc/x86_64-w64-mingw32/9.2.0/include"
 CXXINCS  = -I"C:/Program Files (x86)/Embarcadero/Dev-Cpp/TDM-GCC-64/include" -I"C:/Program Files (x86)/Embarcadero/Dev-Cpp/TDM-GCC-64/x86_64-w64-mingw32/include" -I"C:/Program Files (x86)/Embarcadero/Dev-Cpp/TDM-GCC-64/lib/gcc/x86_64-w64-mingw32/9.2.0/include" -I"C:/Program Files (x86)/Embarcadero/Dev-Cpp/TDM-GCC-64/lib/gcc/x86_64-w64-mingw32/9.2.0/include/c++"
@@ -44,3 +44,12 @@ menu.o: menu.c
 
 RIWAYAT_PEMESANAN.o: RIWAYAT_PEMESANAN.c
 	$(CC) -c RIWAYAT_PEMESANAN.c -o RIWAYAT_PEMESANAN.o $(CFLAGS)
+
+terminal_util.o: terminal_util.c
+	$(CC) -c terminal_util.c -o terminal_util.o $(CFLAGS)
+
+kursi_kereta_UI.o: kursi_kereta_UI.c
+	$(CC) -c kursi_kereta_UI.c -o kursi_kereta_UI.o $(CFLAGS)
+
+manajemen_antrian.o: manajemen_antrian.c
+	$(CC) -c manajemen_antrian.c -o manajemen_antrian.o $(CFLAGS)

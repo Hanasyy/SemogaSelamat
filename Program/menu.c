@@ -58,7 +58,7 @@ void dashboardPengguna(const User* user) {
 
 
 void menuUtama() {
-    Node* head = NULL;
+    UserNode* head = NULL;
     int pilihan;
     char email[100], password[100];
     User u;
