@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#inclue "pemesanan.h"
+#include "pemesanan.h"
 
 typedef struct {
 	char nama[MAX];

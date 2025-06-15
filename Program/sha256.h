@@ -1,3 +1,8 @@
+/*
+Nama: Hana Zahirah Syifa
+NIM: 241524045
+*/
+
 #ifndef SHA256_H
 #define SHA256_H
 
@@ -17,4 +22,5 @@ void sha256_update(SHA256_CTX *ctx, const uint8_t data[], size_t len);
 void sha256_final(SHA256_CTX *ctx, uint8_t hash[]);
 
 #endif
+
 

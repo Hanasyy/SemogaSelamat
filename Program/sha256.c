@@ -1,3 +1,8 @@
+/*
+Nama: Hana Zahirah Syifa
+NIM: 241524045
+*/
+
 #include "sha256.h"
 #include <string.h>
 
