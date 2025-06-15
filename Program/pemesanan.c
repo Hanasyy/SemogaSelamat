@@ -10,22 +10,22 @@ NIM: 241524045
 
 #define MAX_KERETA 100
 
-void insertPemesanan(Node** head, Pemesanan data) {
-    Node* newNode = (Node*)malloc(sizeof(Node));
-    newNode->info = data;
-    newNode->next = *head;
-    *head = newNode;
+void insertPemesanan(PemesananNode** head, Pemesanan data) {
+    PemesananNode* newPemesananNode = (PemesananNode*)malloc(sizeof(PemesananNode));
+    newPemesananNode->info = data;
+    newPemesananNode->next = *head;
+    *head = newPemesananNode;
 }
 
-void printAllPemesanan(Node* head) {
-    Node* curr = head;
+void printAllPemesanan(PemesananNode* head) {
+    PemesananNode* curr = head;
     int i = 1;
     while (curr != NULL) {
         Pemesanan p = curr->info;
         printf("\nPemesanan %d:\n", i++);
         printf("Stasiun Asal      : %s\n", p.stasiunAwal);
         printf("Stasiun Tujuan    : %s\n", p.stasiunTujuan);
-        printf("Tanggal Berangkat : %02d-%02d-%d\n", p.tanggalBerangkat.hari, p.tanggalBerangkat.bulan, p.tanggalBerangkat.tahun);
+        printf("hari Berangkat : %02d-%02d-%d\n", p.hariBerangkat.hari, p.hariBerangkat.bulan, p.hariBerangkat.tahun);
         printf("Jumlah Penumpang  : %d\n", p.jumlahPenumpang);
         printf("Kereta            : %s (%s -> %s, %02d:%02d)\n",
                p.kereta.namaKereta,
@@ -37,8 +37,8 @@ void printAllPemesanan(Node* head) {
     }
 }
 
-void freeList(Node** head) {
-    Node* temp;
+void freeList(PemesananNode** head) {
+    PemesananNode* temp;
     while (*head) {
         temp = *head;
         *head = (*head)->next;

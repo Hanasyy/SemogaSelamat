@@ -6,7 +6,7 @@ NIM: 241524032
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "RIWAYAT_PEMESANAN.h"
+#include "riwayat_pemesanan.h"
 
 // Push ke stack riwayat pemesanan
 void pushHistory(HistoryNode** top, Tiket data) {
@@ -32,12 +32,12 @@ void printHistory(HistoryNode* top) {
     printf("\n");
 
     while (top != NULL) {
-        printf("Tanggal: %02d %s %d\n", top->tiket.tanggal.tanggal,
+        printf("hari: %02d %s %d\n", top->tiket.tanggal.hari,
             getNamaBulan(top->tiket.tanggal.bulan), top->tiket.tanggal.tahun);
         puts("------------------------------");
         printf("| Nama           : %-10s\n", top->tiket.nama);
 		printf("| Rute           : %-10s ? %-10s\n", top->tiket.stasiun_awal, top->tiket.stasiun_tujuan);
-		printf("| Jam Berangkat  : %02d:%02d\n", top->tiket.waktu.hour, top->tiket.waktu.min);
+		printf("| Jam Berangkat  : %02d:%02d\n", top->tiket.waktu.jam, top->tiket.waktu.menit);
 		printf("| Harga          : Rp%.0f\n", top->tiket.harga);
 
         puts("------------------------------");

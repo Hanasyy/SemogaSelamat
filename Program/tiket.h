@@ -1,31 +1,32 @@
-#ifndef tiket_H
-#define tiket_H
+#ifndef TIKET_H
+#define TIKET_H
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "pemesanan.h"
+#include "tipe_data_global.h"     
+#include "pemesanan.h"            
+#define MAX 100
 
 typedef struct {
-	char nama[MAX];
-	char stasiun_awal[MAX];
-	char stasiun_tujuan[MAX];
-	float harga;
-	Date tanggal;
-	Jam waktu;
-}Tiket;
+    char nama[MAX];
+    char stasiun_awal[MAX];
+    char stasiun_tujuan[MAX];
+    float harga;
+    Date tanggal;
+    Jam waktu;
+} Tiket;
 
-typedef struct nodeTiket* ATiket;
+typedef struct nodeTiket {
+    Tiket tiket;
+    struct nodeTiket* next;
+} nodeTiket;
 
-typedef struct{
-	Tiket tiket;
-	ATiket next;
-}nodeTiket;
+typedef nodeTiket* ATiket;
 
-void readFileTicket(ATiket *listTicket, char nama[MAX]);
+void readFileTicket(ATiket* listTicket, char nama[MAX]);
 void saveFileTicket(ATiket listTicket, char nama[MAX]);
-void insertTiket(ATiket *listTicket, Tiket ticket);
+void insertTiket(ATiket* listTicket, Tiket ticket);
 void printListTiket(ATiket listTicket);
 void cetakTiket(Tiket tiket);
 ATiket createNodeTicket(Tiket t);

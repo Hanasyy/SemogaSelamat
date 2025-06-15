@@ -8,16 +8,7 @@ NIM: 241524045
 
 #define MAX 100
 
-typedef struct {
-    int jam;
-    int menit;
-} Jam;
-
-typedef struct {
-    int hari;
-    int bulan;
-    int tahun;
-} Date;
+#include "tipe_data_global.h"
 
 typedef struct {
     char namaKereta[MAX];
@@ -29,19 +20,19 @@ typedef struct {
 typedef struct {
     char stasiunAwal[MAX];
     char stasiunTujuan[MAX];
-    Date tanggalBerangkat;
+    Date hariBerangkat;
     int jumlahPenumpang;
     Kereta kereta;
 } Pemesanan;
 
-typedef struct Node {
+typedef struct PemesananNode {
     Pemesanan info;
-    struct Node* next;
-} Node;
+    struct PemesananNode* next;
+} PemesananNode;
 
-void insertPemesanan(Node** head, Pemesanan data);
-void printAllPemesanan(Node* head);
-void freeList(Node** head);
+void insertPemesanan(PemesananNode** head, Pemesanan data);
+void printAllPemesanan(PemesananNode* head);
+void freeList(PemesananNode** head);
 
 int bacaKeretaDariFile(const char* filename, Kereta daftar[], int maxKereta);
 void tampilkanDaftarKereta(Kereta daftar[], int jumlah);

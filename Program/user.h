@@ -62,5 +62,17 @@ void simpanPenumpangKeFile(const char* path, PenumpangNode* head);
 PenumpangNode* loadPenumpangDariFile(const char* email);
 void freePenumpangList(PenumpangNode** head);
 
+/*
+Nama: Annisa Reida Kamilaini
+NIM: 241524032
+*/
+
+#include "pemesanan.h"
+#include "RIWAYAT_PEMESANAN.h"
+#include "tiket.h"
+
+void prosesPemesananUser(const char* email, Pemesanan p, HistoryNode** riwayatStack, ATiket* listFileTiket);
+
+
 #endif
 
