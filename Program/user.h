@@ -39,23 +39,19 @@ typedef struct PenumpangNode {
     struct PenumpangNode* next;
 } PenumpangNode;
 
-typedef struct Node {
+typedef struct UserNode {
     User info;
-    struct Node* next;
-} Node;
+    struct UserNode* next;
+} UserNode;
 
-// User
+
 void hashPassword(const char* password, char* hashed);
 void insertUser(Node** head, User u);
 int loginUser(Node* head, const char* email, const char* rawPassword);
 void saveUserToFolder(User u);
 int loadUserFromFolder(const char* email, User* u);
-
-// Folder utility
 void buatFolderUser(const char* email);
 void gantiKarakter(char* str, char dari, char ke);
-
-// Penumpang
 void tambahPenumpang(const char* email, Penumpang p);
 void tampilkanPenumpang(const char* email);
 void simpanPenumpangKeFile(const char* path, PenumpangNode* head);

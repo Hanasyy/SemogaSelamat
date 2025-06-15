@@ -9,7 +9,6 @@ NIM: 241524045
 #include "user.h"
 #include "menu.h"
 
-// Fungsi untuk menampilkan dashboard pengguna setelah login berhasil
 void dashboardPengguna(const User* user) {
     int pilihan;
     do {
@@ -110,7 +109,6 @@ void menuUtama() {
                 scanf("%s", password);
 
                 if (loginUser(head, email, password)) {
-                    // load user data dari folder setelah login
                     if (loadUserFromFolder(email, &u)) {
                         dashboardPengguna(&u);
                     } else {

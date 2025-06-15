@@ -5,7 +5,7 @@ NIM: 241524045
 
 #include "user.h"
 
-// Hash password SHA-256
+
 void hashPassword(const char* password, char* hashed) {
     uint8_t hash[SHA256_BLOCK_SIZE];
     SHA256_CTX ctx;
@@ -14,7 +14,6 @@ void hashPassword(const char* password, char* hashed) {
     sha256_update(&ctx, (const uint8_t*)password, strlen(password));
     sha256_final(&ctx, hash);
 
-    // Konversi hash ke string heksadesimal menggunakan while
     int i = 0;
     while (i < SHA256_BLOCK_SIZE) {
         sprintf(hashed + (i * 2), "%02x", hash[i]);
@@ -23,9 +22,8 @@ void hashPassword(const char* password, char* hashed) {
     hashed[64] = '\0';
 }
 
-// Insert user ke linked list di akhir
-void insertUser(Node** head, User u) {
-    Node* newNode = (Node*) malloc(sizeof(Node));
+void insertUser(UserNode** head, User u) {
+    UserNode* newNode = (UserNode*) malloc(sizeof(UserNode));
     if (!newNode) {
         perror("Gagal alokasi memori user");
         exit(1);
@@ -35,14 +33,13 @@ void insertUser(Node** head, User u) {
     if (*head == NULL) {
         *head = newNode;
     } else {
-        Node* temp = *head;
+        UserNode* temp = *head;
         while (temp->next != NULL) temp = temp->next;
         temp->next = newNode;
     }
 }
 
-// Cari user berdasarkan email
-static Node* cariUserByEmail(Node* head, const char* email) {
+static UserNode* cariUserByEmail(UserNode* head, const char* email) {
     while (head != NULL) {
         if (strcmp(head->info.email, email) == 0) return head;
         head = head->next;
@@ -50,11 +47,10 @@ static Node* cariUserByEmail(Node* head, const char* email) {
     return NULL;
 }
 
-// Login user, return 1 jika berhasil, 0 jika gagal
-int loginUser(Node* head, const char* email, const char* rawPassword) {
+int loginUser(UserNode* head, const char* email, const char* rawPassword) {
     char hashed[65];
     hashPassword(rawPassword, hashed);
-    Node* userNode = cariUserByEmail(head, email);
+    UserNode* userNode = cariUserByEmail(head, email);
     if (userNode != NULL && strcmp(userNode->info.password, hashed) == 0) {
         printf("Login berhasil. Selamat datang, %s!\n", userNode->info.nama);
         return 1;
@@ -63,7 +59,6 @@ int loginUser(Node* head, const char* email, const char* rawPassword) {
     return 0;
 }
 
-// Ganti karakter dalam string (misal '@' jadi '_')
 void gantiKarakter(char* str, char dari, char ke) {
     int i = 0;
     while (str[i]) {
@@ -72,15 +67,13 @@ void gantiKarakter(char* str, char dari, char ke) {
     }
 }
 
-// Buat folder user berdasarkan email (misal "user_email")
 void buatFolderUser(const char* email) {
     char folder[256];
     snprintf(folder, sizeof(folder), "users\\%s", email);
-    _mkdir("users");          // pastikan folder induk ada, jika sudah ada _mkdir aman
+    _mkdir("users");          
     _mkdir(folder);
 }
 
-// Simpan data user ke folder berdasarkan email
 void saveUserToFolder(User u) {
     buatFolderUser(u.email);
     char path[300];
@@ -100,7 +93,6 @@ void saveUserToFolder(User u) {
     fclose(f);
 }
 
-// Load data user dari folder berdasarkan email, return 1 jika berhasil
 int loadUserFromFolder(const char* email, User* u) {
     char path[300];
     snprintf(path, sizeof(path), "users\\%s\\profile.txt", email);
@@ -129,7 +121,6 @@ int loadUserFromFolder(const char* email, User* u) {
     return 1;
 }
 
-// Tambah penumpang ke file penumpang.txt di folder user
 void tambahPenumpang(const char* email, Penumpang p) {
     char folder[256];
     snprintf(folder, sizeof(folder), "users\\%s", email);
@@ -150,7 +141,6 @@ void tambahPenumpang(const char* email, Penumpang p) {
     fclose(f);
 }
 
-// Simpan linked list penumpang ke file (dipakai jika ingin overwrite)
 void simpanPenumpangKeFile(const char* path, PenumpangNode* head) {
     FILE* f = fopen(path, "w");
     if (!f) {
@@ -169,7 +159,6 @@ void simpanPenumpangKeFile(const char* path, PenumpangNode* head) {
     fclose(f);
 }
 
-// Load linked list penumpang dari file penumpang.txt berdasarkan email
 PenumpangNode* loadPenumpangDariFile(const char* email) {
     char folder[256];
     snprintf(folder, sizeof(folder), "users\\%s", email);
@@ -223,7 +212,6 @@ PenumpangNode* loadPenumpangDariFile(const char* email) {
     return head;
 }
 
-// Bebaskan linked list penumpang
 void freePenumpangList(PenumpangNode** head) {
     PenumpangNode* cur = *head;
     while (cur) {
@@ -234,7 +222,6 @@ void freePenumpangList(PenumpangNode** head) {
     *head = NULL;
 }
 
-// Tampilkan penumpang dari linked list file penumpang.txt user
 void tampilkanPenumpang(const char* email) {
     PenumpangNode* head = loadPenumpangDariFile(email);
     if (!head) {

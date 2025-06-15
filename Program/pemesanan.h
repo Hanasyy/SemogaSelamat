@@ -34,15 +34,14 @@ typedef struct {
     Kereta kereta;
 } Pemesanan;
 
-typedef struct Node {
+typedef struct PemesananNode {
     Pemesanan info;
-    struct Node* next;
-} Node;
+    struct PemesananNode* next;
+} PemesananNode;
 
 void insertPemesanan(Node** head, Pemesanan data);
 void printAllPemesanan(Node* head);
 void freeList(Node** head);
-
 int bacaKeretaDariFile(const char* filename, Kereta daftar[], int maxKereta);
 void tampilkanDaftarKereta(Kereta daftar[], int jumlah);
 void tampilkanKeretaByRute(Kereta daftar[], int jumlah, const char* asal, const char* tujuan);

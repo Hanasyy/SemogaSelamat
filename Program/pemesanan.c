@@ -10,15 +10,15 @@ NIM: 241524045
 
 #define MAX_KERETA 100
 
-void insertPemesanan(Node** head, Pemesanan data) {
-    Node* newNode = (Node*)malloc(sizeof(Node));
+void insertPemesanan(PemesananNode** head, Pemesanan data) {
+    PemesananNode* newNode = (PemesananNode*)malloc(sizeof(PemesananNode));
     newNode->info = data;
     newNode->next = *head;
     *head = newNode;
 }
 
-void printAllPemesanan(Node* head) {
-    Node* curr = head;
+void printAllPemesanan(PemesananNode* head) {
+    PemesananNode* curr = head;
     int i = 1;
     while (curr != NULL) {
         Pemesanan p = curr->info;
@@ -37,8 +37,8 @@ void printAllPemesanan(Node* head) {
     }
 }
 
-void freeList(Node** head) {
-    Node* temp;
+void freeList(PemesananNode** head) {
+    PemesananNode* temp;
     while (*head) {
         temp = *head;
         *head = (*head)->next;
