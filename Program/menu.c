@@ -10,7 +10,7 @@
 void dashboardUser(const User* user, PemesananNode** headPemesanan, Kereta daftarKereta[], int jumlahKereta) {
     int pilih;
     do {
-        printf("\n===== Naik Kereta - Dashboard Pengguna =====\n");
+        printf("\n===== KAI Access - Dashboard Pengguna =====\n");
         printf("Selamat datang, %s\n", user->nama);
         printf("1. Pesan Tiket Kereta\n");
         printf("2. Lihat Riwayat Pemesanan\n");
@@ -33,11 +33,11 @@ void dashboardUser(const User* user, PemesananNode** headPemesanan, Kereta dafta
                 printf("Nama Penumpang: ");
                 fgets(p.nama, sizeof(p.nama), stdin);
                 p.nama[strcspn(p.nama, "\n")] = '\0';
-                printf("Tipe Identitas (0=KTP, 1=Paspor): ");
+                printf("Tipe Identitas (0=KTP, 1=SIM): ");
                 scanf("%d", (int*)&p.idType);
                 printf("No Identitas: ");
                 scanf("%s", p.noID);
-                printf("Jenis Kelamin (0=Laki-laki, 1=Perempuan): ");
+                printf("Jenis Kelamin (0=Pria, 1=Wanita): ");
                 scanf("%d", (int*)&p.gender);
                 tambahPenumpang(user->email, p);
                 break;
@@ -95,7 +95,7 @@ void menuUtama() {
     User userAktif;
 
     do {
-        printf("\n===== Selamat Datang di Aplikasi Naik Kereta =====\n");
+        printf("\n===== Selamat Datang di Aplikasi KAI Access =====\n");
         printf("1. Login\n");
         printf("2. Registrasi\n");
         printf("0. Keluar\n");
@@ -138,7 +138,7 @@ void menuUtama() {
                 saveUserToFolder(userAktif);
                 break;
             case 0:
-                printf("Terima kasih telah menggunakan Naik Kereta!\n");
+                printf("Terima kasih telah menggunakan KAI Access!\n");
                 break;
             default:
                 printf("Pilihan tidak tersedia.\n");
