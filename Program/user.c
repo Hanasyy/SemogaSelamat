@@ -238,7 +238,6 @@ void tampilkanPenumpang(const char* email) {
     freePenumpangList(&head);
 }
 
-
 void freeListUser(UserNode** head) {
     UserNode* current = *head;
     while (current != NULL) {
