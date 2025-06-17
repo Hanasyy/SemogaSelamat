@@ -8,8 +8,6 @@
 
 typedef struct {
 	char namaKereta[MAX];
-    char stasiunAwal[MAX];
-    char stasiunTujuan[MAX];
     Jam jamBerangkat;
     float harga;
     Rute utama;
