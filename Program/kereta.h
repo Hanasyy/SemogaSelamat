@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "tipe_data_global.h"
 
 typedef struct {
 	char namaKereta[MAX];

@@ -7,22 +7,27 @@ NIM: 241524045
 #define PEMESANAN_H
 
 #define MAX 100
+#define MAX_PENUMPANG 10
 
 #include "tipe_data_global.h"
+#include "kereta.h"
+#include "user.h"
 
 typedef struct {
-    char namaKereta[MAX];
-    char stasiunAwal[MAX];
-    char stasiunTujuan[MAX];
-    Jam jamBerangkat;
-} Kereta;
+    char noIdentitas[MAX];  
+    char nama[MAX];
+    GenderType gender;
+    IDType idType;
+} DataPenumpang;
 
 typedef struct {
+    char emailPemesan[MAX]; 
     char stasiunAwal[MAX];
     char stasiunTujuan[MAX];
     Date hariBerangkat;
     int jumlahPenumpang;
-    Kereta kereta;
+    Kereta *kereta;
+    DataPenumpang daftarPenumpang[MAX_PENUMPANG];
 } Pemesanan;
 
 typedef struct PemesananNode {
@@ -30,14 +35,17 @@ typedef struct PemesananNode {
     struct PemesananNode* next;
 } PemesananNode;
 
+
+void prosesPemesananUser(const User* userLogin, PemesananNode** head, Kereta daftarKereta[], int jumlahKereta);
 void insertPemesanan(PemesananNode** head, Pemesanan data);
 void printAllPemesanan(PemesananNode* head);
-void freeList(PemesananNode** head);
+void freeListPemesanan(PemesananNode** head);
+int validasiTanggal(Date d);
+int validasiStasiun(const Kereta* k, const char* asal, const char* tujuan);
+int cekKapasitasTersedia(PemesananNode* head, Kereta* kereta, Date tanggal, int jumlahDiminta);
+void simpanPemesananKeFile(PemesananNode* head, const char* filename);
+void loadPemesananDariFile(PemesananNode** head, const char* filename, Kereta daftarKereta[], int jumlahKereta);
 
-int bacaKeretaDariFile(const char* filename, Kereta daftar[], int maxKereta);
-void tampilkanDaftarKereta(Kereta daftar[], int jumlah);
-void tampilkanKeretaByRute(Kereta daftar[], int jumlah, const char* asal, const char* tujuan);
-Kereta pilihKeretaDariFile(Kereta daftar[], int jumlah, const char* asal, const char* tujuan);
 
 #endif
 
