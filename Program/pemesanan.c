@@ -10,6 +10,7 @@ NIM: 241524045
 #include "kursi_kereta_UI.h"
 #include "manajemen_antrian.h"
 #include "tiket.h"
+#include "riwayat_pemesanan.h"
 
 
 void insertPemesanan(PemesananNode** head, Pemesanan data) {
@@ -159,84 +160,114 @@ void loadPemesananDariFile(PemesananNode** head, const char* filename, Kereta da
     fclose(f);
 }
 
-void prosesPemesananUser(const User* userLogin, PemesananNode** head, Kereta daftarKereta[], int jumlahKereta) {
-    Pemesanan p;
-    strcpy(p.emailPemesan, userLogin->email);
+void prosesPemesananUser(const User* userLogin, PemesananNode** head, Kereta* kereta, int jumlahKereta, HistoryNode** historyTop) {
+    Pemesanan pemesanan;
+    strcpy(pemesanan.emailPemesan, userLogin->email);
+    pemesanan.kereta = kereta;
 
     printf("Masukkan stasiun awal: ");
-    scanf(" %[^\n]", p.stasiunAwal);
+    fgets(pemesanan.stasiunAwal, MAX, stdin);
+    pemesanan.stasiunAwal[strcspn(pemesanan.stasiunAwal, "\n")] = 0;
+
     printf("Masukkan stasiun tujuan: ");
-    scanf(" %[^\n]", p.stasiunTujuan);
+    fgets(pemesanan.stasiunTujuan, MAX, stdin);
+    pemesanan.stasiunTujuan[strcspn(pemesanan.stasiunTujuan, "\n")] = 0;
 
-    printf("Masukkan tanggal keberangkatan (dd mm yyyy): ");
-    scanf("%d %d %d", &p.hariBerangkat.hari, &p.hariBerangkat.bulan, &p.hariBerangkat.tahun);
+    printf("Tanggal keberangkatan (dd-mm-yyyy): ");
+    scanf("%d-%d-%d", &pemesanan.hariBerangkat.hari, &pemesanan.hariBerangkat.bulan, &pemesanan.hariBerangkat.tahun);
+    getchar();
+    
+	// Hitung jumlah kursi terisi untuk tanggal dan kereta ini
+	int kursiTerisi = 0;
+	PemesananNode* temp = *head;
+	while (temp != NULL) {
+	    if (temp->info.kereta == kereta &&
+	        temp->info.hariBerangkat.hari == pemesanan.hariBerangkat.hari &&
+	        temp->info.hariBerangkat.bulan == pemesanan.hariBerangkat.bulan &&
+	        temp->info.hariBerangkat.tahun == pemesanan.hariBerangkat.tahun) {
+	        kursiTerisi += temp->info.jumlahPenumpang;
+	    }
+	    temp = temp->next;
+	}
 
-    if (!validasiTanggal(p.hariBerangkat)) {
-        printf("Tanggal tidak valid!\n");
-        return;
-    }
+	// Visualisasi kursi
+	tampilkanKursi(kereta->kapasitas, kursiTerisi);
 
-    printListKereta();
-    char namaKeretaDipilih[MAX];
-    printf("Masukkan nama kereta yang dipilih: ");
-    scanf(" %[^\n]", namaKeretaDipilih);
+	// Hitung sisa kursi
+	int sisaKursi = kereta->kapasitas - kursiTerisi;
+	if (sisaKursi <= 0) {
+	    printf("\nMaaf, semua kursi sudah penuh pada tanggal ini.\n");
+	    printf("Tekan Enter untuk kembali ke dashboard...");
+	    getchar();  // flush enter
+	    return;
+	}
 
-    int i, ditemukan = 0;
-    for (i = 0; i < jumlahKereta; i++) {
-        if (strcmp(namaKeretaDipilih, daftarKereta[i].namaKereta) == 0) {
-            p.kereta = &daftarKereta[i];
-            ditemukan = 1;
-            break;
-        }
-    }
 
-    if (!ditemukan) {
-        printf("Kereta tidak ditemukan!\n");
-        return;
-    }
-
-    printf("Jumlah penumpang: ");
-    scanf("%d", &p.jumlahPenumpang);
+	do {
+    printf("Jumlah penumpang (maks %d): ", sisaKursi < MAX_PENUMPANG ? sisaKursi : MAX_PENUMPANG);
+    fflush(stdout);
+    scanf("%d", &pemesanan.jumlahPenumpang);
     getchar();
 
+    if (pemesanan.jumlahPenumpang < 1 || 
+        pemesanan.jumlahPenumpang > sisaKursi || 
+        pemesanan.jumlahPenumpang > MAX_PENUMPANG) {
+        printf("Jumlah tidak valid. Coba lagi.\n");
+    }
+	} while (pemesanan.jumlahPenumpang < 1 || 
+         pemesanan.jumlahPenumpang > sisaKursi || 
+         pemesanan.jumlahPenumpang > MAX_PENUMPANG);
+
     ATiket listTiket = NULL;
-
-    for (int i = 0; i < p.jumlahPenumpang; i++) {
-        printf("Data Penumpang ke-%d:\n", i + 1);
+    
+    for (int i = 0; i < pemesanan.jumlahPenumpang; i++) {
+        printf("\n-- Data Penumpang %d --\n", i + 1);
         printf("Nama: ");
-        fgets(p.daftarPenumpang[i].nama, sizeof(p.daftarPenumpang[i].nama), stdin);
-        p.daftarPenumpang[i].nama[strcspn(p.daftarPenumpang[i].nama, "\n")] = '\0';
+        fgets(pemesanan.daftarPenumpang[i].nama, MAX, stdin);
+        pemesanan.daftarPenumpang[i].nama[strcspn(pemesanan.daftarPenumpang[i].nama, "\n")] = 0;
 
-        printf("Jenis ID (0=KTP, 1=SIM): ");
-        scanf("%d", (int*)&p.daftarPenumpang[i].idType);
-        printf("Nomor ID: ");
-        scanf("%s", p.daftarPenumpang[i].noIdentitas);
-        printf("Jenis Kelamin (0=Pria, 1=Wanita): ");
-        scanf("%d", (int*)&p.daftarPenumpang[i].gender);
+        printf("Tipe Identitas (0=KTP, 1=Paspor): ");
+        scanf("%d", (int*)&pemesanan.daftarPenumpang[i].idType);
         getchar();
 
-       
-        int kursiTerisi = 0;
-        tampilkanKursi(p.kereta->kapasitas, kursiTerisi);
-        int noKursi;
-        printf("Pilih nomor kursi untuk penumpang ini (0-%d): ", p.kereta->kapasitas - 1);
-        scanf("%d", &noKursi);
+        printf("Nomor Identitas: ");
+        fgets(pemesanan.daftarPenumpang[i].noIdentitas, MAX, stdin);
+        pemesanan.daftarPenumpang[i].noIdentitas[strcspn(pemesanan.daftarPenumpang[i].noIdentitas, "\n")] = 0;
+
+        printf("Jenis Kelamin (0=Laki-laki, 1=Perempuan): ");
+        scanf("%d", (int*)&pemesanan.daftarPenumpang[i].gender);
         getchar();
 
-     
-        Tiket t;
-        strcpy(t.nama, p.daftarPenumpang[i].nama);
-        strcpy(t.stasiun_awal, p.stasiunAwal);
-        strcpy(t.stasiun_tujuan, p.stasiunTujuan);
-        t.harga = p.kereta->harga;
-        t.tanggal = p.hariBerangkat;
-        t.waktu = p.kereta->jamBerangkat;
-        insertTiket(&listTiket, t);
+        Tiket tiket;
+        strcpy(tiket.nama, pemesanan.daftarPenumpang[i].nama);
+        strcpy(tiket.stasiun_awal, pemesanan.stasiunAwal);
+        strcpy(tiket.stasiun_tujuan, pemesanan.stasiunTujuan);
+        tiket.waktu = kereta->utama.stasiun->stasiun.keberangkatan;
+        tiket.harga = 100000.0;
+        tiket.tanggal = pemesanan.hariBerangkat;
 
+        insertTiket(&listTiket, tiket);
+        pushHistory(historyTop, tiket);
     }
 
-    insertPemesanan(head, p);
-    printf("Pemesanan berhasil dan semua tiket telah dibuat.\n");
+    saveFileTicket(listTiket, userLogin->email);
+
+    PemesananNode* newNode = (PemesananNode*)malloc(sizeof(PemesananNode));
+    newNode->info = pemesanan;
+    newNode->next = NULL;
+
+    if (*head == NULL) {
+        *head = newNode;
+    } else {
+        PemesananNode* curr = *head;
+        while (curr->next != NULL) {
+            curr = curr->next;
+        }
+        curr->next = newNode;
+    }
+
+    printf("\nPemesanan berhasil disimpan!");
+	printf("\nTekan Enter untuk kembali ke dashboard...");
+	getchar(); getchar();  // <- dua kali jika sebelumnya ada scanf
+
 }
-
-

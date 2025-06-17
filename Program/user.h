@@ -11,7 +11,6 @@ NIM: 241524045
 #include <string.h>
 #include <direct.h>
 
-
 #define MAX 100
 
 typedef enum { KTP = 1, PASPOR } IDType;
@@ -44,7 +43,15 @@ typedef struct UserNode {
     struct UserNode* next;
 } UserNode;
 
+// Fungsi login & registrasi
+void formLogin(User* hasilLogin);
+void formRegistrasi();
 
+// Validasi
+int validasiEmail(const char* email);
+int validasiPassword(const char* pass);
+
+// Utility user
 void hashPassword(const char* password, char* hashed);
 void insertUser(UserNode** head, User u);
 int loginUser(UserNode* headUser, const char* email, const char* rawPassword);
@@ -57,12 +64,6 @@ void tampilkanPenumpang(const char* email);
 void simpanPenumpangKeFile(const char* path, PenumpangNode* head);
 PenumpangNode* loadPenumpangDariFile(const char* email);
 void freePenumpangList(PenumpangNode** head);
-static UserNode* cariUserByEmail(UserNode* head, const char* email);
-
-
-
-#endif
-
-
 void freeListUser(UserNode** head);
 
+#endif

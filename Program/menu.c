@@ -1,17 +1,33 @@
+/*
+Nama: Annisa Reida Kamilaini
+NIM: 241524032
+*/
+
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include "user.h"
+#include <stdlib.h>
+#ifdef _WIN32
+#define clearScreen() system("cls")
+#else
+#define clearScreen() system("clear")
+#endif
+
 #include "menu.h"
-#include "pemesanan.h"
-#include "kereta.h"
+#include "tiket.h"
 #include "RIWAYAT_PEMESANAN.h"
+#include "terminal_util.h"
+
+HistoryNode* historyTop = NULL;
 
 void dashboardUser(const User* user, PemesananNode** headPemesanan, Kereta daftarKereta[], int jumlahKereta) {
     int pilih;
     do {
-        printf("\n===== KAI Access - Dashboard Pengguna =====\n");
+        clearScreen();
+        setWarna(WARNA_KUNING);
+        printf("\n===== Dashboard Pengguna =====\n");
+        setWarna(WARNA_HIJAU);
         printf("Selamat datang, %s\n", user->nama);
+        resetWarna();
         printf("1. Pesan Tiket Kereta\n");
         printf("2. Lihat Riwayat Pemesanan\n");
         printf("3. Tambah Penumpang\n");
@@ -21,34 +37,83 @@ void dashboardUser(const User* user, PemesananNode** headPemesanan, Kereta dafta
         printf("Pilih menu: ");
         scanf("%d", &pilih); getchar();
 
+        clearScreen();
         switch (pilih) {
-            case 1:
-                prosesPemesananUser(user, headPemesanan, daftarKereta, jumlahKereta);
+            case 1: {
+                char namaKereta[100];
+
+                FILE *f = fopen("C:\Users\DELL\Documents\GitHub\SemogaSelamat\Program\listKereta.txt", "r");
+                if (!f) {
+                    setWarna(WARNA_MERAH);
+                    printf("Gagal membuka list kereta.\n");
+                    resetWarna();
+                    break;
+                }
+
+                setWarna(WARNA_BIRU);
+                printf("\n=== Daftar Kereta Tersedia ===\n");
+                resetWarna();
+                while (fgets(namaKereta, sizeof(namaKereta), f)) {
+                    namaKereta[strcspn(namaKereta, "\n")] = 0;
+                    printf("%d. %s\n", jumlahKereta + 1, namaKereta);
+                    readKeretaToList(namaKereta, &daftarKereta[jumlahKereta]);
+                    jumlahKereta++;
+                }
+                fclose(f);
+
+                if (jumlahKereta == 0) {
+                    setWarna(WARNA_MERAH);
+                    printf("Tidak ada kereta tersedia.\n");
+                    resetWarna();
+                    break;
+                }
+
+                int pilihKereta;
+                do {
+                    printf("Pilih kereta (1 - %d): ", jumlahKereta);
+                    scanf("%d", &pilihKereta); getchar();
+                } while (pilihKereta < 1 || pilihKereta > jumlahKereta);
+
+                Kereta keretaDipilih = daftarKereta[pilihKereta - 1];
+
+                printf("\n--- Jadwal Kereta %s ---\n", keretaDipilih.namaKereta);
+                printf("Rute Utama:\n");
+                printRuteKereta(keretaDipilih.utama);
+                printf("Rute Reverse:\n");
+                printRuteKereta(keretaDipilih.reverse);
+
+                prosesPemesananUser(user, headPemesanan, &keretaDipilih, 1, &historyTop);
+                simpanPemesananKeFile(*headPemesanan, "data_pemesanan.txt");
+                printf("\nTekan Enter untuk kembali ke dashboard..."); getchar();
                 break;
+            }
             case 2:
-                printAllPemesanan(*headPemesanan);
+                printHistory(historyTop);
+                printf("\nTekan Enter untuk kembali ke dashboard..."); getchar();
                 break;
             case 3: {
                 Penumpang p;
                 printf("Nama Penumpang: ");
                 fgets(p.nama, sizeof(p.nama), stdin);
                 p.nama[strcspn(p.nama, "\n")] = '\0';
-                printf("Tipe Identitas (0=KTP, 1=SIM): ");
+                printf("Tipe Identitas (1=KTP, 2=Paspor): ");
                 scanf("%d", (int*)&p.idType);
                 printf("No Identitas: ");
                 scanf("%s", p.noID);
-                printf("Jenis Kelamin (0=Pria, 1=Wanita): ");
+                printf("Jenis Kelamin (1=Laki-laki, 2=Perempuann): ");
                 scanf("%d", (int*)&p.gender);
                 tambahPenumpang(user->email, p);
+                printf("\nData penumpang berhasil ditambahkan. Tekan Enter untuk kembali..."); getchar(); 
                 break;
             }
             case 4:
                 tampilkanPenumpang(user->email);
+                printf("\nTekan Enter untuk kembali ke dashboard..."); getchar();
                 break;
             case 5: {
                 char namaKereta[MAX];
                 printf("Masukkan nama kereta yang ingin dibatalkan: ");
-                scanf(" %[^\n]", namaKereta);
+                scanf(" %[^ ]", namaKereta);
                 PemesananNode *curr = *headPemesanan, *prev = NULL;
                 int found = 0;
                 while (curr != NULL) {
@@ -70,6 +135,7 @@ void dashboardUser(const User* user, PemesananNode** headPemesanan, Kereta dafta
                 if (!found) {
                     printf("Tiket tidak ditemukan untuk dibatalkan.\n");
                 }
+                printf("\nTekan Enter untuk kembali ke dashboard..."); getchar(); getchar();
                 break;
             }
             case 0:
@@ -77,6 +143,7 @@ void dashboardUser(const User* user, PemesananNode** headPemesanan, Kereta dafta
                 break;
             default:
                 printf("Menu tidak tersedia.\n");
+                printf("\nTekan Enter untuk kembali ke dashboard..."); getchar();
         }
     } while (pilih != 0);
 }
@@ -95,57 +162,38 @@ void menuUtama() {
     User userAktif;
 
     do {
-        printf("\n===== Selamat Datang di Aplikasi KAI Access =====\n");
+        clearScreen();
+        setWarna(WARNA_BIRU);
+        printf("\n===== Selamat Datang di Aplikasi Naik Kereta =====\n");
+        resetWarna();
         printf("1. Login\n");
         printf("2. Registrasi\n");
         printf("0. Keluar\n");
         printf("Pilih menu: ");
         scanf("%d", &pilih); getchar();
 
+        clearScreen();
         switch (pilih) {
             case 1:
-                printf("Email: ");
-                scanf("%s", email);
-                printf("Password: ");
-                scanf("%s", password);
-                if (loginUser(headUser, email, password)) {
-                    if (loadUserFromFolder(email, &userAktif)) {
-                        dashboardUser(&userAktif, &daftarPemesanan, daftarKereta, jumlahKereta);
-                        simpanPemesananKeFile(daftarPemesanan, "data_pemesanan.txt");
-                    }
-                } else {
-                    printf("Login gagal!\n");
+                formLogin(&userAktif);
+                if (userAktif.email[0] != '\0') {
+                    dashboardUser(&userAktif, &daftarPemesanan, daftarKereta, jumlahKereta);
+                    simpanPemesananKeFile(daftarPemesanan, "data_pemesanan.txt");
                 }
                 break;
             case 2:
-                printf("Nama Lengkap: ");
-                fgets(userAktif.nama, sizeof(userAktif.nama), stdin);
-                userAktif.nama[strcspn(userAktif.nama, "\n")] = '\0';
-                printf("Email: ");
-                scanf("%s", userAktif.email);
-                printf("Password: ");
-                scanf("%s", password);
-                hashPassword(password, userAktif.password);
-                printf("Tipe Identitas (0=KTP, 1=Paspor): ");
-                scanf("%d", (int*)&userAktif.idType);
-                printf("Nomor Identitas: ");
-                scanf("%s", userAktif.noID);
-                printf("No HP: ");
-                scanf("%s", userAktif.noHP);
-                printf("Jenis Kelamin (0=Laki-laki, 1=Perempuan): ");
-                scanf("%d", (int*)&userAktif.gender);
-                insertUser(&headUser, userAktif);
-                saveUserToFolder(userAktif);
+                formRegistrasi();
+                printf("\nTekan Enter untuk kembali ke menu utama..."); getchar();
                 break;
             case 0:
-                printf("Terima kasih telah menggunakan KAI Access!\n");
+                printf("Terima kasih telah menggunakan Naik Kereta!\n");
                 break;
             default:
                 printf("Pilihan tidak tersedia.\n");
+                printf("\nTekan Enter untuk kembali ke menu utama..."); getchar();
         }
     } while (pilih != 0);
 
     freeListPemesanan(&daftarPemesanan);
     freeListUser(&headUser);
 }
-

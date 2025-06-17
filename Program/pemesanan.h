@@ -9,9 +9,12 @@ NIM: 241524045
 #define MAX 100
 #define MAX_PENUMPANG 10
 
+#include <stdlib.h>
 #include "tipe_data_global.h"
 #include "kereta.h"
 #include "user.h"
+#include "riwayat_pemesanan.h"
+#include "kursi_kereta_UI.h"
 
 typedef struct {
     char noIdentitas[MAX];  
@@ -35,8 +38,7 @@ typedef struct PemesananNode {
     struct PemesananNode* next;
 } PemesananNode;
 
-
-void prosesPemesananUser(const User* userLogin, PemesananNode** head, Kereta daftarKereta[], int jumlahKereta);
+void prosesPemesananUser(const User* userLogin, PemesananNode** head, Kereta* kereta, int jumlahKereta, HistoryNode** historyTop);
 void insertPemesanan(PemesananNode** head, Pemesanan data);
 void printAllPemesanan(PemesananNode* head);
 void freeListPemesanan(PemesananNode** head);
@@ -45,6 +47,7 @@ int validasiStasiun(const Kereta* k, const char* asal, const char* tujuan);
 int cekKapasitasTersedia(PemesananNode* head, Kereta* kereta, Date tanggal, int jumlahDiminta);
 void simpanPemesananKeFile(PemesananNode* head, const char* filename);
 void loadPemesananDariFile(PemesananNode** head, const char* filename, Kereta daftarKereta[], int jumlahKereta);
+
 
 
 #endif
