@@ -1,31 +1,43 @@
-#ifndef kereta_H
-#define kereta_H
+#ifndef KERETA_H
+#define KERETA_H
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "tipe_data_global.h"
 
+struct nodeStasiun;
+
 typedef struct {
+<<<<<<< Updated upstream
 	char namaKereta[MAX];
+=======
+    char namaStasiun[MAX];
+    Jam kedatangan;
+    Jam keberangkatan;
+    struct nodeStasiun* nextStasiun;  
+} Stasiun;
+
+typedef struct nodeStasiun {
+    Stasiun stasiun;
+    struct nodeStasiun* nextStasiun;
+} nodeStasiun;
+
+typedef struct {
+    nodeStasiun* stasiun;
+} Rute;
+
+typedef struct {
+    char namaKereta[MAX];
+    char stasiunAwal[MAX];
+    char stasiunTujuan[MAX];
+>>>>>>> Stashed changes
     Jam jamBerangkat;
     float harga;
+    int kapasitas;
     Rute utama;
     Rute reverse;
-}Kereta;
-
-typedef struct {
-	char namaStasiun[MAX];
-	Jam kedatangan;
-	Jam keberangkatan;
-	nodeStasiun nextStasiun;
-}Stasiun;
-
-typedef struct nodeStasiun *Stasiun;
-
-typedef struct {
-	nodeStasiun stasiun;
-}Rute;
+} Kereta;
 
 void readFileListKereta();
 void printListKereta();
@@ -34,6 +46,6 @@ void tampilJadwal(Kereta kereta);
 void menuTampilJadwal();
 
 void createListRute(Rute *r);
-void insertStasiun(Rute *r, nodeStasiun s);
+void insertStasiun(Rute *r, Stasiun s);
 
 #endif
