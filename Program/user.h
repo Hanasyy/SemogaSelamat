@@ -10,7 +10,6 @@ NIM: 241524045
 #include <stdlib.h>
 #include <string.h>
 
-#include <direct.h>
 
 #define MAX 100
 
@@ -47,7 +46,7 @@ typedef struct UserNode {
 
 void hashPassword(const char* password, char* hashed);
 void insertUser(UserNode** head, User u);
-int loginUser(UserNode* head, const char* email, const char* rawPassword);
+int loginUser(UserNode* headUser, const char* email, const char* rawPassword);
 void saveUserToFolder(User u);
 int loadUserFromFolder(const char* email, User* u);
 void buatFolderUser(const char* email);
@@ -57,18 +56,12 @@ void tampilkanPenumpang(const char* email);
 void simpanPenumpangKeFile(const char* path, PenumpangNode* head);
 PenumpangNode* loadPenumpangDariFile(const char* email);
 void freePenumpangList(PenumpangNode** head);
+static UserNode* cariUserByEmail(UserNode* head, const char* email);
 
-/*
-Nama: Annisa Reida Kamilaini
-NIM: 241524032
-*/
-
-#include "pemesanan.h"
-#include "RIWAYAT_PEMESANAN.h"
-#include "tiket.h"
-
-void prosesPemesananUser(const char* email, Pemesanan p, HistoryNode** riwayatStack, ATiket* listFileTiket);
 
 
 #endif
+
+
+void freeListUser(UserNode** head);
 

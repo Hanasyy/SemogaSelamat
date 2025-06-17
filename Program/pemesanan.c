@@ -7,6 +7,9 @@ NIM: 241524045
 #include <stdlib.h>
 #include <string.h>
 #include "pemesanan.h"
+#include "kursi_kereta_UI.h"
+#include "manajemen_antrian.h"
+#include "tiket.h"
 
 
 void insertPemesanan(PemesananNode** head, Pemesanan data) {
@@ -25,8 +28,8 @@ void printAllPemesanan(PemesananNode* head) {
         printf("Email Pemesan: %s\n", temp->info.emailPemesan);
         printf("Rute: %s -> %s\n", temp->info.stasiunAwal, temp->info.stasiunTujuan);
         printf("Tanggal Berangkat: %02d-%02d-%04d\n",
-               temp->info.hariBerangkat.dd, temp->info.hariBerangkat.mm, temp->info.hariBerangkat.yyyy);
-        printf("Kereta: %s\n", temp->info.kereta->nama);
+               temp->info.hariBerangkat.hari, temp->info.hariBerangkat.bulan, temp->info.hariBerangkat.tahun);
+        printf("Kereta: %s\n", temp->info.kereta->namaKereta);
         printf("Jumlah Penumpang: %d\n", temp->info.jumlahPenumpang);
 
         int j = 0;
@@ -51,19 +54,22 @@ void freeListPemesanan(PemesananNode** head) {
 }
 
 int validasiTanggal(Date d) {
-    if (d.dd < 1 || d.dd > 31 || d.mm < 1 || d.mm > 12 || d.yyyy < 2024) return 0;
+    if (d.hari < 1 || d.hari > 31 || d.bulan < 1 || d.bulan > 12 || d.tahun < 2024) return 0;
     return 1;
 }
 
 int validasiStasiun(const Kereta* k, const char* asal, const char* tujuan) {
     int foundAsal = 0;
     int foundTujuan = 0;
-    int i = 0;
 
-    while (i < k->jumlahStasiun) {
-        if (strcmp(k->rute[i], asal) == 0) foundAsal = 1;
-        if (strcmp(k->rute[i], tujuan) == 0) foundTujuan = 1;
-        i++;
+    nodeStasiun* current = k->utama.stasiun;
+    while (current != NULL) {
+        if (strcmp(current->stasiun.namaStasiun, asal) == 0)
+            foundAsal = 1;
+        if (strcmp(current->stasiun.namaStasiun, tujuan) == 0)
+            foundTujuan = 1;
+
+        current = current->nextStasiun;
     }
 
     return foundAsal && foundTujuan;
@@ -75,9 +81,10 @@ int cekKapasitasTersedia(PemesananNode* head, Kereta* kereta, Date tanggal, int 
 
     while (temp != NULL) {
         if (temp->info.kereta == kereta &&
-            temp->info.hariBerangkat.dd == tanggal.dd &&
-            temp->info.hariBerangkat.mm == tanggal.mm &&
-            temp->info.hariBerangkat.yyyy == tanggal.yyyy) {
+            temp->info.hariBerangkat.hari == tanggal.hari &&
+            temp->info.hariBerangkat.bulan == tanggal.bulan &&
+            temp->info.hariBerangkat.tahun == tanggal.tahun
+			) {
             totalTerpesan += temp->info.jumlahPenumpang;
         }
         temp = temp->next;
@@ -95,8 +102,8 @@ void simpanPemesananKeFile(PemesananNode* head, const char* filename) {
         Pemesanan* p = &temp->info;
         fprintf(f, "%s;%s;%s;%d-%d-%d;%s;%d\n",
                 p->emailPemesan, p->stasiunAwal, p->stasiunTujuan,
-                p->hariBerangkat.dd, p->hariBerangkat.mm, p->hariBerangkat.yyyy,
-                p->kereta->nama, p->jumlahPenumpang);
+                p->hariBerangkat.hari, p->hariBerangkat.bulan, p->hariBerangkat.tahun,
+                p->kereta->namaKereta, p->jumlahPenumpang);
 
         int i = 0;
         while (i < p->jumlahPenumpang) {
@@ -123,13 +130,13 @@ void loadPemesananDariFile(PemesananNode** head, const char* filename, Kereta da
         char namaKereta[MAX];
         sscanf(baris, "%[^;];%[^;];%[^;];%d-%d-%d;%[^;];%d",
                p.emailPemesan, p.stasiunAwal, p.stasiunTujuan,
-               &p.hariBerangkat.dd, &p.hariBerangkat.mm, &p.hariBerangkat.yyyy,
+               &p.hariBerangkat.hari, &p.hariBerangkat.bulan, &p.hariBerangkat.tahun,
                namaKereta, &p.jumlahPenumpang);
 
         p.kereta = NULL;
         int i = 0;
         while (i < jumlahKereta) {
-            if (strcmp(daftarKereta[i].nama, namaKereta) == 0) {
+            if (strcmp(daftarKereta[i].namaKereta, namaKereta) == 0) {
                 p.kereta = &daftarKereta[i];
                 break;
             }
@@ -152,7 +159,6 @@ void loadPemesananDariFile(PemesananNode** head, const char* filename, Kereta da
     fclose(f);
 }
 
-
 void prosesPemesananUser(const User* userLogin, PemesananNode** head, Kereta daftarKereta[], int jumlahKereta) {
     Pemesanan p;
     strcpy(p.emailPemesan, userLogin->email);
@@ -163,66 +169,74 @@ void prosesPemesananUser(const User* userLogin, PemesananNode** head, Kereta daf
     scanf(" %[^\n]", p.stasiunTujuan);
 
     printf("Masukkan tanggal keberangkatan (dd mm yyyy): ");
-    scanf("%d %d %d", &p.hariBerangkat.dd, &p.hariBerangkat.mm, &p.hariBerangkat.yyyy);
+    scanf("%d %d %d", &p.hariBerangkat.hari, &p.hariBerangkat.bulan, &p.hariBerangkat.tahun);
 
     if (!validasiTanggal(p.hariBerangkat)) {
         printf("Tanggal tidak valid!\n");
         return;
     }
 
-    printf("Daftar Kereta:\n");
-    int i = 0;
-    while (i < jumlahKereta) {
-        printf("%d. %s\n", i + 1, daftarKereta[i].nama);
-        i++;
+    printListKereta();
+    char namaKeretaDipilih[MAX];
+    printf("Masukkan nama kereta yang dipilih: ");
+    scanf(" %[^\n]", namaKeretaDipilih);
+
+    int i, ditemukan = 0;
+    for (i = 0; i < jumlahKereta; i++) {
+        if (strcmp(namaKeretaDipilih, daftarKereta[i].namaKereta) == 0) {
+            p.kereta = &daftarKereta[i];
+            ditemukan = 1;
+            break;
+        }
     }
 
-    int pilihKereta;
-    printf("Pilih kereta (nomor): ");
-    scanf("%d", &pilihKereta);
-    if (pilihKereta < 1 || pilihKereta > jumlahKereta) {
-        printf("Pilihan tidak valid.\n");
+    if (!ditemukan) {
+        printf("Kereta tidak ditemukan!\n");
         return;
     }
 
-    p.kereta = &daftarKereta[pilihKereta - 1];
-
-    if (!validasiStasiun(p.kereta, p.stasiunAwal, p.stasiunTujuan)) {
-        printf("Stasiun tidak valid untuk kereta tersebut.\n");
-        return;
-    }
-
-    printf("Masukkan jumlah penumpang: ");
+    printf("Jumlah penumpang: ");
     scanf("%d", &p.jumlahPenumpang);
+    getchar();
 
-    if (p.jumlahPenumpang < 1 || p.jumlahPenumpang > MAX_PENUMPANG) {
-        printf("Jumlah penumpang tidak valid!\n");
-        return;
-    }
+    ATiket listTiket = NULL;
 
-    if (!cekKapasitasTersedia(*head, p.kereta, p.hariBerangkat, p.jumlahPenumpang)) {
-        printf("Kapasitas tidak mencukupi!\n");
-        return;
-    }
-
-    int j = 0;
-    while (j < p.jumlahPenumpang) {
-        printf("Data Penumpang #%d\n", j + 1);
+    for (int i = 0; i < p.jumlahPenumpang; i++) {
+        printf("Data Penumpang ke-%d:\n", i + 1);
         printf("Nama: ");
-        scanf(" %[^\n]", p.daftarPenumpang[j].nama);
-        printf("No Identitas: ");
-        scanf(" %[^\n]", p.daftarPenumpang[j].noIdentitas);
-        int gender, idType;
-        printf("Jenis Kelamin (0=Laki-laki, 1=Perempuan): ");
-        scanf("%d", &gender);
-        printf("Tipe Identitas (0=KTP, 1=Paspor): ");
-        scanf("%d", &idType);
-        p.daftarPenumpang[j].gender = (GenderType)gender;
-        p.daftarPenumpang[j].idType = (IDType)idType;
-        j++;
+        fgets(p.daftarPenumpang[i].nama, sizeof(p.daftarPenumpang[i].nama), stdin);
+        p.daftarPenumpang[i].nama[strcspn(p.daftarPenumpang[i].nama, "\n")] = '\0';
+
+        printf("Jenis ID (0=KTP, 1=SIM): ");
+        scanf("%d", (int*)&p.daftarPenumpang[i].idType);
+        printf("Nomor ID: ");
+        scanf("%s", p.daftarPenumpang[i].noIdentitas);
+        printf("Jenis Kelamin (0=Pria, 1=Wanita): ");
+        scanf("%d", (int*)&p.daftarPenumpang[i].gender);
+        getchar();
+
+       
+        int kursiTerisi = 0;
+        tampilkanKursi(p.kereta->kapasitas, kursiTerisi);
+        int noKursi;
+        printf("Pilih nomor kursi untuk penumpang ini (0-%d): ", p.kereta->kapasitas - 1);
+        scanf("%d", &noKursi);
+        getchar();
+
+     
+        Tiket t;
+        strcpy(t.nama, p.daftarPenumpang[i].nama);
+        strcpy(t.stasiun_awal, p.stasiunAwal);
+        strcpy(t.stasiun_tujuan, p.stasiunTujuan);
+        t.harga = p.kereta->harga;
+        t.tanggal = p.hariBerangkat;
+        t.waktu = p.kereta->jamBerangkat;
+        insertTiket(&listTiket, t);
+
     }
 
     insertPemesanan(head, p);
-    printf("Pemesanan berhasil disimpan!\n");
+    printf("Pemesanan berhasil dan semua tiket telah dibuat.\n");
 }
+
 
