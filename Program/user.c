@@ -70,8 +70,8 @@ void gantiKarakter(char* str, char dari, char ke) {
 void buatFolderUser(const char* email) {
     char folder[256];
     snprintf(folder, sizeof(folder), "users\\%s", email);
-    __mkdir("users");          
-    __mkdir(folder);
+    _mkdir("users");          
+    _mkdir(folder);
 }
 
 void saveUserToFolder(User u) {

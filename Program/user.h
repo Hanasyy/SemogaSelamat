@@ -9,6 +9,7 @@ NIM: 241524045
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <direct.h>
 
 
 #define MAX 100
