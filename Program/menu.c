@@ -8,13 +8,15 @@ NIM: 241524045
 #include <string.h>
 #include "user.h"
 #include "menu.h"
-
+#include "pemesanan.h"
 void dashboardPengguna(const User* user) {
     int pilihan;
     do {
         printf("\n=== Dashboard Pengguna (%s) ===\n", user->email);
         printf("1. Tambah Penumpang\n");
         printf("2. Tampilkan Penumpang\n");
+        printf("3. Lakukan Pemesanan Tiket\n");
+        printf("4. Lihat Riwayat Pemesanan\n");
         printf("0. Logout\n");
         printf("Pilih: ");
         scanf("%d", &pilihan);
@@ -43,6 +45,14 @@ void dashboardPengguna(const User* user) {
 
             case 2:
                 tampilkanPenumpang(user->email);
+                break;
+                
+            case 3:
+                prosesPemesananUser(user, headPemesanan, daftarKereta, jumlahKereta);
+                break;
+
+            case 4:
+                printAllPemesanan(*headPemesanan);
                 break;
 
             case 0:
@@ -81,7 +91,7 @@ void menuUtama() {
                 printf("Masukkan Email: ");
                 scanf("%s", u.email);
 
-                printf("Masukkan Password: ");
+				printf("Masukkan Password: ");
                 scanf("%s", password);
                 hashPassword(password, u.password);
 
@@ -102,24 +112,29 @@ void menuUtama() {
                 printf("Registrasi berhasil.\n");
                 break;
 
-            case 2:
+			case 2:
                 printf("Masukkan Email: ");
                 scanf("%s", email);
                 printf("Masukkan Password: ");
                 scanf("%s", password);
 
-                if (loginUser(head, email, password)) {
+                if (loginUser(headUser, email, password)) {
                     if (loadUserFromFolder(email, &u)) {
-                        dashboardPengguna(&u);
+                        dashboardPengguna(&u, &listPemesanan, daftarKereta, jumlahKereta);
+                        simpanPemesananKeFile(listPemesanan, "data_pemesanan.txt");
                     } else {
                         printf("Gagal memuat data user dari folder.\n");
                     }
+                } else {
+                    printf("Login gagal. Email atau password salah.\n");
                 }
                 break;
 
             case 0:
                 printf("Keluar dari program...\n");
-                break;
+                freeListPemesanan(&listPemesanan);
+                freeListUser(&headUser);
+                break;		
 
             default:
                 printf("Pilihan tidak valid.\n");
