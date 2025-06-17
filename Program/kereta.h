@@ -9,9 +9,6 @@
 struct nodeStasiun;
 
 typedef struct {
-<<<<<<< Updated upstream
-	char namaKereta[MAX];
-=======
     char namaStasiun[MAX];
     Jam kedatangan;
     Jam keberangkatan;
@@ -31,7 +28,6 @@ typedef struct {
     char namaKereta[MAX];
     char stasiunAwal[MAX];
     char stasiunTujuan[MAX];
->>>>>>> Stashed changes
     Jam jamBerangkat;
     float harga;
     int kapasitas;
