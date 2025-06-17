@@ -47,10 +47,10 @@ static UserNode* cariUserByEmail(UserNode* head, const char* email) {
     return NULL;
 }
 
-int loginUser(UserNode* head, const char* email, const char* rawPassword) {
+int loginUser(UserNode* headUser, const char* email, const char* rawPassword) {
     char hashed[65];
     hashPassword(rawPassword, hashed);
-    UserNode* userNode = cariUserByEmail(head, email);
+    UserNode* userNode = cariUserByEmail(headUser, email);
     if (userNode != NULL && strcmp(userNode->info.password, hashed) == 0) {
         printf("Login berhasil. Selamat datang, %s!\n", userNode->info.nama);
         return 1;
@@ -238,29 +238,3 @@ void tampilkanPenumpang(const char* email) {
     freePenumpangList(&head);
 }
 
-void prosesPemesananUser(const char* email, Pemesanan p, HistoryNode** riwayatStack, ATiket* listFileTiket) {
-    // Ambil daftar penumpang dari file user
-    PenumpangNode* daftar = loadPenumpangDariFile(email);
-    PenumpangNode* current = daftar;
-
-    for (int i = 0; i < p.jumlahPenumpang && current != NULL; i++) {
-        Tiket t;
-        strcpy(t.nama, current->info.nama);
-        strcpy(t.stasiun_awal, p.stasiunAwal);
-        strcpy(t.stasiun_tujuan, p.stasiunTujuan);
-        t.harga = 150000; // bisa dikalkulasi lebih dinamis
-        t.tanggal.hari = p.hariBerangkat.hari;
-        t.tanggal.bulan = p.hariBerangkat.bulan;
-        t.tanggal.tahun = p.hariBerangkat.tahun;
-        t.waktu.jam = p.kereta.jamBerangkat.jam;
-        t.waktu.menit = p.kereta.jamBerangkat.menit;
-
-        pushHistory(riwayatStack, t);
-        insertTiket(listFileTiket, t);
-
-        current = current->next;
-    }
-
-    saveFileTicket(*listFileTiket, (char*)email);
-    freePenumpangList(&daftar);
-}

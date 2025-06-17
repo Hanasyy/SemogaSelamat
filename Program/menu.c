@@ -9,7 +9,8 @@ NIM: 241524045
 #include "user.h"
 #include "menu.h"
 #include "pemesanan.h"
-void dashboardPengguna(const User* user) {
+
+void dashboardPengguna(const User* user, PemesananNode** head, Kereta daftarKereta[], int jumlahKereta) {
     int pilihan;
     do {
         printf("\n=== Dashboard Pengguna (%s) ===\n", user->email);
@@ -48,11 +49,11 @@ void dashboardPengguna(const User* user) {
                 break;
                 
             case 3:
-                prosesPemesananUser(user, headPemesanan, daftarKereta, jumlahKereta);
+                prosesPemesananUser(user, head, daftarKereta, jumlahKereta);
                 break;
 
             case 4:
-                printAllPemesanan(*headPemesanan);
+                printAllPemesanan(*head);
                 break;
 
             case 0:

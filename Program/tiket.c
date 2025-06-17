@@ -25,7 +25,7 @@ void insertTiket(ATiket *listTicket, Tiket ticket) {
     }
 }
 
-void readFileTicket(ATiket *listTicket, char nama[MAX]) {
+void readFileTicket(ATiket *listTiket, char nama[MAX]) {
     Tiket tiket;
     char filename[200];
     snprintf(filename, sizeof(filename), "Ticket%s.txt", nama);
@@ -42,29 +42,29 @@ void readFileTicket(ATiket *listTicket, char nama[MAX]) {
 
         char *token = strtok(baris, "\t");
         if (token == NULL) continue;
-        strcpy(ticket.nama, token);
+        strcpy(tiket.nama, token);
 
         token = strtok(NULL, "\t");
-        if (token != NULL) strcpy(ticket.stasiun_awal, token);
+        if (token != NULL) strcpy(tiket.stasiun_awal, token);
 
         token = strtok(NULL, "\t");
-        if (token != NULL) strcpy(ticket.stasiun_tujuan, token);
+        if (token != NULL) strcpy(tiket.stasiun_tujuan, token);
 
         token = strtok(NULL, "\t");
-        if (token != NULL) ticket.harga = atof(token);
+        if (token != NULL) tiket.harga = atof(token);
 
         token = strtok(NULL, "\t");
         if (token != NULL) sscanf(token, "%d-%d-%d", 
-            &ticket.tanggal.hari,
-            &ticket.tanggal.bulan,
-            &ticket.tanggal.tahun);
+            &tiket.tanggal.hari,
+            &tiket.tanggal.bulan,
+            &tiket.tanggal.tahun);
 
         token = strtok(NULL, "\t");
         if (token != NULL) sscanf(token, "%d:%d", 
             &tiket.waktu.jam,
             &tiket.waktu.menit);
 
-        insertTiket(listTicket, tiket);
+        insertTiket(listTiket, tiket);
     }
 
     fclose(file);
