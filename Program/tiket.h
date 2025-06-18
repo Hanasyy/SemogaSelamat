@@ -1,5 +1,5 @@
-#ifndef TIKET_H
-#define TIKET_H
+#ifndef tiket_H
+#define tiket_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,7 +25,7 @@ typedef struct nodeTiket {
 typedef nodeTiket* ATiket;
 
 void readFileTicket(ATiket* listTicket, char nama[MAX]);
-void saveFileTicket(ATiket listTicket, char nama[MAX]);
+void saveFileTicket(ATiket listTicket, const char* nama);
 void insertTiket(ATiket* listTicket, Tiket ticket);
 void printListTiket(ATiket listTicket);
 void cetakTiket(Tiket tiket);

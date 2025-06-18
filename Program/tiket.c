@@ -70,7 +70,7 @@ void readFileTicket(ATiket *listTiket, char nama[MAX]) {
     fclose(file);
 }
 
-void saveFileTicket(ATiket listTicket, char nama[MAX]) {
+void saveFileTicket(ATiket listTicket, const char* nama) {
     char filename[200];
     snprintf(filename, sizeof(filename), "Ticket%s.txt", nama);
 
