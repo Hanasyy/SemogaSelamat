@@ -4,8 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "tipe_data_global.h"     
-#include "pemesanan.h"            
+#include "tipe_data_global.h"                
 #define MAX 100
 
 typedef struct {
