@@ -30,7 +30,7 @@ void printListKereta() {
 
 void readKeretaToList(char *namaKereta, Kereta *kereta) {
     char path[256];
-    snprintf(path, sizeof(path), "C:/Users/reida/Downloads/KAI_ACCESS_FINAL_CLEAN_OK/%s.txt", namaKereta);
+    snprintf(path, sizeof(path), "D:\\GitHub\\SemogaSelamat\\Program\\%s.txt", namaKereta);
 
     FILE* file = fopen(path, "r");
     if (!file) {
@@ -116,7 +116,7 @@ void trimNewline(char* str) {
 
 int cekRutePadaKeretaDipilih(const char* namaKereta, const char* awal, const char* tujuan, char* jamAwal, char* jamTiba) {
     char path[256];
-    snprintf(path, sizeof(path), "C:/Users/reida/Downloads/KAI_ACCESS_FINAL_CLEAN_OK/%s.txt", namaKereta);
+    snprintf(path, sizeof(path), "D:\\GitHub\\SemogaSelamat\\Program\\%s.txt", namaKereta);
 
     FILE* f = fopen(path, "r");
     if (!f) return 0;

@@ -42,7 +42,7 @@ void dashboardUser(const User* user, PemesananNode** headPemesanan, Kereta dafta
             case 1: {
                 char namaKereta[100];
 
-                FILE *f = fopen("C:\Users\DELL\Documents\GitHub\SemogaSelamat\Program\listKereta.txt", "r");
+                FILE *f = fopen("D:\\GitHub\\SemogaSelamat\\Program\\listKereta.txt", "r");
                 if (!f) {
                     setWarna(WARNA_MERAH);
                     printf("Gagal membuka list kereta.\n");
@@ -91,21 +91,55 @@ void dashboardUser(const User* user, PemesananNode** headPemesanan, Kereta dafta
                 printHistory(historyTop);
                 printf("\nTekan Enter untuk kembali ke dashboard..."); getchar();
                 break;
-            case 3: {
-                Penumpang p;
-                printf("Nama Penumpang: ");
-                fgets(p.nama, sizeof(p.nama), stdin);
-                p.nama[strcspn(p.nama, "\n")] = '\0';
-                printf("Tipe Identitas (1=KTP, 2=Paspor): ");
-                scanf("%d", (int*)&p.idType);
-                printf("No Identitas: ");
-                scanf("%s", p.noID);
-                printf("Jenis Kelamin (1=Laki-laki, 2=Perempuann): ");
-                scanf("%d", (int*)&p.gender);
-                tambahPenumpang(user->email, p);
-                printf("\nData penumpang berhasil ditambahkan. Tekan Enter untuk kembali..."); getchar(); 
+			case 3: {
+			    char namaKereta[100];
+
+                FILE *f = fopen("D:\\GitHub\\SemogaSelamat\\Program\\listKereta.txt", "r");
+                if (!f) {
+                    setWarna(WARNA_MERAH);
+                    printf("Gagal membuka list kereta.\n");
+                    resetWarna();
+                    break;
+                }
+
+                setWarna(WARNA_BIRU);
+                printf("\n=== Daftar Kereta Tersedia ===\n");
+                resetWarna();
+                while (fgets(namaKereta, sizeof(namaKereta), f)) {
+                    namaKereta[strcspn(namaKereta, "\n")] = 0;
+                    printf("%d. %s\n", jumlahKereta + 1, namaKereta);
+                    readKeretaToList(namaKereta, &daftarKereta[jumlahKereta]);
+                    jumlahKereta++;
+                }
+                fclose(f);
+
+                if (jumlahKereta == 0) {
+                    setWarna(WARNA_MERAH);
+                    printf("Tidak ada kereta tersedia.\n");
+                    resetWarna();
+                    break;
+                }
+
+                int pilihKereta;
+                do {
+                    printf("Pilih kereta (1 - %d): ", jumlahKereta);
+                    scanf("%d", &pilihKereta); getchar();
+                } while (pilihKereta < 1 || pilihKereta > jumlahKereta);
+
+                Kereta keretaDipilih = daftarKereta[pilihKereta - 1];
+
+                printf("\n--- Jadwal Kereta %s ---\n", keretaDipilih.namaKereta);
+                printf("Rute Utama:\n");
+                printRuteKereta(keretaDipilih.utama);
+                printf("Rute Reverse:\n");
+                printRuteKereta(keretaDipilih.reverse);
+
+                prosesPemesananUser(user, headPemesanan, &keretaDipilih, 1, &historyTop);
+                simpanPemesananKeFile(*headPemesanan, "data_pemesanan.txt");
+                printf("\nTekan Enter untuk kembali ke dashboard..."); getchar();
                 break;
-            }
+			}
+
             case 4:
                 tampilkanPenumpang(user->email);
                 printf("\nTekan Enter untuk kembali ke dashboard..."); getchar();

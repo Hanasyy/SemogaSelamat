@@ -1,7 +1,7 @@
-Nama: rei
-Email: rei@gmail.com
-IDType: 0
-NoID: 12345
-NoHP: 12333
-Gender: 1
-Password: a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3
+reida
+rei@gmail.com
+1
+1232738
+1237823
+2
+7480aef5735985ec73003005e55e736e67a555d817432a6ab5f48884a9564f1b
